@@ -1,34 +1,84 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import './App.css'
+import React, { useState } from 'react';
 
-function App() {
-  const [count, setCount] = useState(0)
+const App: React.FC = () => {
+  const [ingredients, setIngredients] = useState('');
+  const [response, setResponse] = useState<any[]>([]); // Initialize with an empty array
+  const [isLoading, setIsLoading] = useState(false);
+
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIngredients(e.target.value);
+  };
+
+  const handleButtonClick = async () => {
+    setIsLoading(true);
+    try {
+      const requestBody = {
+        model: "gpt-3.5-turbo",
+        messages: [
+          { role: "system", content: "You are a recipe provider based on provided ingredients." },
+          { role: "user", content: ingredients }
+        ],
+        n: 5,
+        temperature: 1,
+        max_tokens: 1000,
+        stream: false,
+        presence_penalty: 2
+      };
+  
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer sk-proj-DllWOJbGkJNI3wq0eXE2T3BlbkFJi0SAPDmzsqALnJdzGTOx` 
+        },
+        body: JSON.stringify(requestBody)
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        setResponse(data.choices || []);
+      } else {
+        console.error('Error:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+    setIsLoading(false);
+  };
+  
 
   return (
     <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <header className="App-header">
+        <h1>ChatGPT RecipeMaker</h1>
+      </header>
+      <div className="recipemaker-container">
+        <h2>Ingredients</h2>
+        <input
+          type="text"
+          value={ingredients}
+          onChange={handleInputChange}
+          placeholder="Enter ingredients..."
+        />
+        <button onClick={handleButtonClick}>Get Recipe</button>
+        <div className="response-container">
+          <h2>Response</h2>
+          {isLoading ? (
+            <div className="loading-spinner"></div>
+          ) : (
+            response.map((choice: any) => (
+              <div key={choice.index}>
+                <h3>Recipe Option {choice.index + 1}</h3>
+                <p>{choice.message.content}</p>
+              </div>
+            ))
+          )}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </div>
-  )
-}
 
-export default App
+      </div>
+    </div>
+  );
+};
+
+export default App;
