@@ -30,7 +30,7 @@ const App: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer sk-proj-DllWOJbGkJNI3wq0eXE2T3BlbkFJi0SAPDmzsqALnJdzGTOx` 
+          'Authorization': `Bearer sk-proj-YVjzXCchAZ8PNEUzAThZT3BlbkFJxHR15zZGY5jUY1OaQtbc` 
         },
         body: JSON.stringify(requestBody)
       });
